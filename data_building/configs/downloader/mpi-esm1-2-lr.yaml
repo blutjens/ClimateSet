@@ -1,0 +1,10 @@
+models: ["MPI-ESM1-2-LR"]
+downloader_kwargs:
+  vars: ["tas", "pr", "uas", "vas", "psl", "hus"]
+  experiments: ["historical","ssp126", "ssp119", "ssp245", "ssp370", "ssp585"]
+  data_dir: "/net/fs09/d0/lutjens/raw/"
+  max_ensemble_members: -1
+  overwrite: False
+  download_biomassburning: False
+  download_metafiles: False
+  plain_emission_vars: False
