@@ -38,7 +38,7 @@ class Downloader:
 
     def __init__(
         self,
-        model: Union[str, None] = "NorESM2-LM",  # defaul as in ClimateBench
+        model: Union[str, None] = "NorESM2-LM",  # default as in ClimateBench
         experiments: List[str] = [
             "historical",
             "ssp370",
@@ -58,6 +58,7 @@ class Downloader:
         download_biomassburning=True,  # get biomassburning data for input4mips
         download_metafiles=True,  # get input4mips meta files
         plain_emission_vars=True,  # specifies if plain variabsle for emissions data are given and rest is inferred or if variables are specified
+        quick_skip=False, # quick already downloaded realizations
     ):
         """Init method for the Downloader
         params:
@@ -69,6 +70,8 @@ class Downloader:
             overwrite: (bool) Flag if files should be overwritten, if they already exist.
             download_biomassburning: (bool) Flag if biomassburning data for input4mips variables should be downloaded.
             download_metafiles: (bool) Flag if metafiles for input4mips variables should be downloaded.
+            quick_skip: (bool) Flag if realizations should be skipped before opening the dataset if the folder already exists. 
+                This will speed up the download if download was interrupted. Especially if many files are downloaded via fileServer instead of opendap dodsC.
         """
 
         self.model = model
@@ -81,6 +84,7 @@ class Downloader:
         self.year_max = 2100
 
         self.overwrite = overwrite
+        self.quick_skip = quick_skip
 
         # csv with supported models and sources
         df_model_source = DATA_CSV
@@ -124,6 +128,9 @@ class Downloader:
             if max_ensemble_members > max_possible_member_number:
                 print("Not enough members available. Choosing smallest maximum.")
                 self.max_ensemble_members = max_possible_member_number
+            else: 
+                # Defining self.max_ensemble_members, otherwise error will be raised in print statement below.
+                self.max_ensemble_members = max_ensemble_members
         print(f"Downloading data for {self.max_ensemble_members} members.")
 
         """ # determine if we are on a slurm cluster
@@ -330,6 +337,24 @@ class Downloader:
 
         for i, ensemble_member in enumerate(ensemble_member_final_list):
             print(f"Ensembles member: {ensemble_member}")
+            # Quick skip over realizations that have already been downloaded, before accessing
+            #  the metadata on the server. Danger: This configuration will not check
+            #  if the complete list of available years have been downloaded for each realization.
+            if self.quick_skip and not self.overwrite:
+                out_dir_prelim = f"{project}/{self.model}/{ensemble_member}/{experiment}/{variable}/{nominal_resolution.replace(' ', '_')}/{frequency}/"
+                path_prelim = os.path.join(self.data_dir_parent, out_dir_prelim)
+                if os.path.isdir(path_prelim):
+                    # Get the years of the downloaded files
+                    downloaded_yrs = sorted(os.listdir(path_prelim))
+                    downloaded_yrs = [int(x) for x in downloaded_yrs if x.isdigit()] # extract integers
+                    print(
+                        f"Quick skip. Folders for years {downloaded_yrs[0]} to "\
+                        f"{downloaded_yrs[-1]} for {self.model}/{ensemble_member}/"\
+                        f"{experiment}/{variable} already exist. Skipping download "\
+                        f"of this realization."
+                    )
+                    continue
+
             ctx = ctx_origin.constrain(variant_label=ensemble_member)
 
             # pick a version
@@ -372,17 +397,32 @@ class Downloader:
                     nominal_resolution = nominal_resolution.replace(" ", "_")
 
                     for f in file_names:
-                        # try to opend datset
+                        # try to open dataset
                         try:
                             ds = xr.open_dataset(
                                 f, chunks={"time": chunksize}, engine="netcdf4"
                             )
-
-                        except OSError:
-                            print(
-                                "Having problems downloading the dateset. The server might be down. Skipping"
-                            )
-                            continue
+                        
+                        except Exception as error:
+                            try:                            
+                                print("Error occured: ", type(error).__name__, error)
+                                # Try downloading from fileServer instead of opendap dodsC
+                                #  src https://github.com/pydata/xarray/issues/3653
+                                print('Trying to download from fileServer instead of opendap dodsC')
+                                url_fileServer = f.replace("dodsC", "fileServer")
+                                url_fileServer = url_fileServer + '#mode=bytes'
+                                if 'http' in url_fileServer and 'https' not in url_fileServer:
+                                    # Replace http with https addresses
+                                    url_fileServer = url_fileServer.replace('http', 'https')
+                                ds = xr.open_dataset(
+                                    url_fileServer, chunks={"time": chunksize}, engine="netcdf4"
+                                )
+                            except Exception as error:
+                                print("A 2nd error occured: ", type(error).__name__, error)
+                                print(
+                                    "Having problems downloading the dateset. The server might be down. Skipping"
+                                )
+                                continue
 
                         if nominal_resolution == "none":
                             try:

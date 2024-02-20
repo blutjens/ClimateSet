@@ -3,8 +3,10 @@ downloader_kwargs:
   vars: ["tas", "pr", "uas", "vas", "psl", "hus"]
   experiments: ["historical","ssp126", "ssp119", "ssp245", "ssp370", "ssp585"]
   data_dir: "/net/fs09/d0/lutjens/raw/"
-  max_ensemble_members: -1
+  max_ensemble_members: -1 # 1 # -1
+  ensemble_members: Null # ['r40i1p1f1'] # Null
   overwrite: False
   download_biomassburning: False
   download_metafiles: False
-  plain_emission_vars: False
+  plain_emission_vars: False  
+  quick_skip: True
