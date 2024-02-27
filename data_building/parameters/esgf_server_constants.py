@@ -1310,6 +1310,7 @@ SUPPORTED_EXPERIMENTS = [
     "ssp370",
     "ssp245",
     "ssp126",
+    "ssp119",
     "piControl",
     "piClim-spAer-anthro",
     "piClim-spAer-aer",
