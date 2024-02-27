@@ -305,7 +305,7 @@ class Downloader:
             frequency=frequency, nominal_resolution=nominal_resolution
         )
 
-        variants = list(ctx.facet_counts["variant_label"].keys())
+        variants = sorted(list(ctx.facet_counts["variant_label"].keys()))
 
         download_files = {}
 

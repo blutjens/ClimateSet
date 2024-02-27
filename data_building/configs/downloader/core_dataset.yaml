@@ -1,5 +1,6 @@
 models: ["NorESM2-LM"]
 downloader_kwargs:
-  vars: ["CO2", "BC", "SO2", "CH4", "tas", "pr"]
-  experiments: ["historical","ssp126", "ssp245", "ssp370", "ssp585"]
-  
+  vars: ["CO2"] # "SO2", "BC", "CH4", "tas", "pr"
+  experiments: ["ssp126", "ssp245", "ssp370", "ssp585"] # "historical"
+  data_dir: "/d0/lutjens/raw/"
+  download_biomassburning: False  # get biomassburning data for input4mips
