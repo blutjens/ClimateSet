@@ -361,7 +361,7 @@ class Downloader:
             versions = list(ctx.facet_counts["version"].keys())
 
             if not versions:
-                print("No versions are available. Skipping.")
+                print("No versions are available. Node is likely offline, which can be verified at https://aims2.llnl.gov/. Skipping.")
                 continue
             print("Available versions:", versions)
 
@@ -468,6 +468,13 @@ class Downloader:
                                 print("writing file")
                                 print(outfile)
                                 ds_y.to_netcdf(outfile)
+
+                    # If we have achieved to download a full set of valid files there is no
+                    #  need to check the other files in files_list, because they will have
+                    #  already been downloaded. The files_list contains the urls to files that 
+                    #  only vary in download node or domain notation, e.g., (Emon, Amon, CFmon),
+                    #  but those files should be equivalent.
+                    break
                 except:
                     continue
 
