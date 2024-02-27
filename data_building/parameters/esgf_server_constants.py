@@ -182,9 +182,11 @@ VAR_SOURCE_LOOKUP = {
         "vo",
         "vmo",
         "vegHeight",
+        "vas",
         "va",
         "uo",
         "umo",
+        "uas"
         "ua",
         "tslsi",
         "tsl",
