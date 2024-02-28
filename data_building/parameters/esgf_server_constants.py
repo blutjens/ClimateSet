@@ -186,7 +186,7 @@ VAR_SOURCE_LOOKUP = {
         "va",
         "uo",
         "umo",
-        "uas"
+        "uas",
         "ua",
         "tslsi",
         "tsl",
