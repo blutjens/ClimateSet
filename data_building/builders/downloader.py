@@ -82,6 +82,9 @@ class Downloader:
 
         self.ensemble_members = ensemble_members
         self.year_max = 2100
+        # piControl is run from 1850 to 2850 in MPI-ESM1-2-LR, but I am not sure for how many years other models ran it.  
+        if 'piControl' in self.experiments and self.model == 'MPI-ESM1-2-LR':
+            self.year_max = 2850
 
         self.overwrite = overwrite
         self.quick_skip = quick_skip
@@ -464,9 +467,10 @@ class Downloader:
                             else:
                                 print("Selecting specific year", y)
                                 ds_y = ds.sel(time=y)
-                                print(ds_y)
+                                # print(ds_y)
                                 print("writing file")
                                 print(outfile)
+
                                 ds_y.to_netcdf(outfile)
 
                     # If we have achieved to download a full set of valid files there is no
