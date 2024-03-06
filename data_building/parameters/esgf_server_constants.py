@@ -117,7 +117,7 @@ MODEL_SOURCES = {
         "center": "MPI-M",
     },
     "MPI-ESM1-2-LR": {
-        "node_link": "http://esgf-node.llnl.gov/esg-search/",
+        "node_link": "https://esgf-data.dkrz.de/esg-search/", #"https://esgf-data.dkrz.de/esg-search", # "http://esgf-node.llnl.gov/esg-search/"
         "center": "MPI-M",
     },
     "MRI-ESM2-0": {
@@ -1348,6 +1348,8 @@ SUPPORTED_EXPERIMENTS = [
     "hist-aer",
     "hist-GHG",
     "amip",
+    "abrupt-4xCO2",
+    "1pctCO2",
 ]
 # filepath to var to res Mapping
 VAR_RES_MAPPING_PATH = "/home/charlie/Documents/MILA/causalpaca/data/data_description/mappings/variableid2tableid.csv"

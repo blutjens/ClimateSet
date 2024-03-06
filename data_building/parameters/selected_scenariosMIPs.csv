@@ -29,7 +29,7 @@
 38,MCM-UA-1-0,250,ssp126 ssp245 ssp370 ssp585,1 1 1 1,True
 40,MIROC6,250,ssp119 ssp126 ssp245 ssp370 ssp434 ssp460 ssp534-over ssp585,50 50 50 50 1 1 1 50,True
 42,MPI-ESM1-2-HR,100,ssp126 ssp245 ssp370 ssp585,2 2 10 2,True
-43,MPI-ESM1-2-LR,250,ssp119 ssp126 ssp245 ssp370 ssp585 1pctCO2 piControl,51 51 51 51 51 1 1,True
+43,MPI-ESM1-2-LR,250,ssp119 ssp126 ssp245 ssp370 ssp585 1pctCO2 piControl abrupt-4xCO2,51 51 51 51 51 1 1 1,True
 44,MRI-ESM2-0,100,ssp119 ssp126 ssp245 ssp370 ssp434 ssp460 ssp534-over ssp585,5 5 10 5 1 1 1 6,True
 46,NorESM2-LM,250,ssp126 ssp245 ssp370 ssp534-over ssp585,1 13 3 1 1,True
 47,NorESM2-MM,100,ssp126 ssp245 ssp370 ssp585,1 2 1 1,True

@@ -59,6 +59,7 @@ class Downloader:
         download_metafiles=True,  # get input4mips meta files
         plain_emission_vars=True,  # specifies if plain variabsle for emissions data are given and rest is inferred or if variables are specified
         quick_skip=False, # quick already downloaded realizations
+        frequency: str = "mon", # preferred frequency
     ):
         """Init method for the Downloader
         params:
@@ -80,11 +81,13 @@ class Downloader:
         self.raw_vars = []
         self.model_vars = []
 
+        self.frequency = frequency
+
         self.ensemble_members = ensemble_members
         self.year_max = 2100
         # piControl is run from 1850 to 2850 in MPI-ESM1-2-LR, but I am not sure for how many years other models ran it.  
         if 'piControl' in self.experiments and self.model == 'MPI-ESM1-2-LR':
-            self.year_max = 2850
+            self.year_max = 2249 # cutting off at 2249 do avoid issues with np.datetime64 
 
         self.overwrite = overwrite
         self.quick_skip = quick_skip
@@ -249,8 +252,7 @@ class Downloader:
 
         """
         conn = SearchConnection(self.model_node_link, distrib=False)
-
-        facets = "project,experiment_id,source_id,variable,frequency,variant_label,variable, nominal_resolution, version, grid_label, experiment_id"
+        facets = "project,experiment_id,source_id,variable,frequency,variant_label,variable, nominal_resolution, version, grid_label, experiment_id,institution_id"
 
         """"
 
@@ -301,7 +303,9 @@ class Downloader:
 
         # dealing with frequencies
         print("Available frequencies: ", ctx.facet_counts["frequency"].keys())
-        frequency = "mon"  # list(ctx.facet_counts['frequency'].keys())[-1]
+        frequency = self.frequency  # list(ctx.facet_counts['frequency'].keys())[-1]
+
+        assert frequency in ctx.facet_counts["frequency"].keys(), f'Desired frequency {frequency} not available'
         print("choosing frequency: ", frequency)
 
         ctx_origin = ctx.constrain(
@@ -417,6 +421,15 @@ class Downloader:
                                 if 'http' in url_fileServer and 'https' not in url_fileServer:
                                     # Replace http with https addresses
                                     url_fileServer = url_fileServer.replace('http', 'https')
+                                if self.model == 'MPI-ESM1-2-LR' and 'historical' in self.experiments and \
+                                    self.frequency == 'mon' and ('r42' in ensemble_member or \
+                                    'r43' in ensemble_member or 'r44' in ensemble_member or \
+                                    'r45' in ensemble_member or 'r46' in ensemble_member or \
+                                    'r47' in ensemble_member):
+                                    print('Changing fileServer address from cmip6/CMIP to cmip6_mh1007/CMIP for MPI-ESM1-2-LR '\
+                                          'model to retrieve historical/r42-47. This change is likely not necessary in the '\
+                                          'future, because the issue has been reported and is actively being addressed by MPI.')
+                                    url_fileServer = url_fileServer.replace('cmip6/CMIP', 'cmip6_mh1007/CMIP')
                                 ds = xr.open_dataset(
                                     url_fileServer, chunks={"time": chunksize}, engine="netcdf4"
                                 )
