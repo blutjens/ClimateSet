@@ -33,6 +33,7 @@ class DummyDataModule(LightningDataModule):
 
     def __init__(
         self,
+        emissions_tracker:bool = False,
         in_var_ids: List[str] = ["BC", "CO2", "CH4", "SO2"],
         out_var_ids: List[str] = ["pr", "tas"],
         seq_len: int = 10,
@@ -44,6 +45,8 @@ class DummyDataModule(LightningDataModule):
         batch_size: int = 16,
         eval_batch_size: int = 64,
         num_workers: int = 0,
+        shuffle:bool = False,
+        persistent_workers:bool = False,
         pin_memory: bool = False,
         load_train_into_mem: bool = False,
         load_test_into_mem: bool = False,
@@ -86,6 +89,7 @@ class DummyDataModule(LightningDataModule):
         self._data_val = None
         self._data_test = None
         self._data_predict = None
+        self.emissions_tracker = self.hparams.emissions_tracker
         self.log_text = get_logger()
         self.test_set_names = test_set_names
         if seq_to_seq:
@@ -183,6 +187,7 @@ class DummyDataModule(LightningDataModule):
         shared_kwargs = dict(
             num_workers=int(self.hparams.num_workers),
             pin_memory=self.hparams.pin_memory,
+            persistent_workers = self.hparams.persistent_workers,
         )
         return shared_kwargs
 

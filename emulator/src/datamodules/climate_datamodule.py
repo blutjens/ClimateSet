@@ -34,7 +34,7 @@ class ClimateDataModule(LightningDataModule):
     split, transform and process the data
 
     Read the docs:
-        https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html
+        https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     """
 
     def __init__(
@@ -55,7 +55,10 @@ class ClimateDataModule(LightningDataModule):
         test_models: Union[List[str], None] = None,
         batch_size: int = 16,
         eval_batch_size: int = 64,
+        emissions_tracker:bool = False,
         num_workers: int = 0,
+        shuffle:bool = False,
+        persistent_workers:bool = False,
         pin_memory: bool = False,
         load_train_into_mem: bool = True,
         load_test_into_mem: bool = True,
@@ -100,7 +103,7 @@ class ClimateDataModule(LightningDataModule):
             for scenario in test_scenarios
             for model in self.test_models
         ]
-
+        self.emissions_tracker = self.hparams.emissions_tracker
         print("Test Sets: ", self.test_set_names)
 
         self._data_train = None
@@ -187,6 +190,7 @@ class ClimateDataModule(LightningDataModule):
         shared_kwargs = dict(
             num_workers=int(self.hparams.num_workers),
             pin_memory=self.hparams.pin_memory,
+            persistent_workers = self.hparams.persistent_workers,
         )
         return shared_kwargs
 

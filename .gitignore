@@ -4,16 +4,16 @@ RAW_DATA
 PROCESSED_DATA
 tmp/*
 logs/*
+runs/*
 *.out
 *.nc
-internal
-data
+#data
 pretrained_models
 Climateset_DATA
 # deprecated files
 deprecated/
 notes/
-
+emissions.csv
 # privacy files
 data_generation/parameters/credentials.txt
 
@@ -46,6 +46,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+emulator/logs
+emulator/wandb
+wandb/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -122,6 +126,9 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+env_emulator/
+env_new_emulator/*
+env_old_emulator/*
 .env
 .venv
 env/
@@ -148,3 +155,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Checkpoints
+emulator/*/checkpoints/
+emulator/src/core/models/climax/pretrained_checkpoints/
+Slurm/*
+emulator/configs/experiment/Scaling_Experiments/*
+emulator/configs/experiment/Scaling_Experiments
+Slurm/
+
+# if you put data somewhere else
+emulator/src/data/constants.py

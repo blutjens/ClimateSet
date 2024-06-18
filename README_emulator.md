@@ -5,10 +5,26 @@ Here we provide a quick documentation on installation, setup and a quickstart gu
 
 ## Getting started
 ### Getting the data
-To download and store the preprocessed dataset ready for training locally, execute the following command:
+The preprocessed dataset is available on [hugginface](https://huggingface.co/datasets/climateset/causalpaca). You can opt to download the entire dataset or pick only specific climate models for targets. Please note that the core dataset only entails two variables (pr & tas) and is only available in a single resouliton that was used for the benchmarking. We will release code to preprocess other variables and other resolutions shortly and will also update the data repository in the future.
+
+To download the entire dataset, you can make use of the provided python script:
+```python
+python download_climateset.py
+```
+If you wish to download only specific climate model data, please refer to the instructions on [hugginface](https://huggingface.co/datasets/climateset/causalpaca/blob/main/README.md).
+
+If you happen to be inside of Canada and wish to download the data in a different way, you can also make use of the provided bash script. Please note that this option is very slow for users located outside of Canada.
+
+# SET YOU DATASET PATH adn download dataset
+
+in 
+- constants.py as well as in the
+-  download_climateset.sh, 
+set the path to where you want your dataset to be downloaded.
+Then execute: 
 
 ```bash
-bash download_climateset.sh
+bash download_climateset.sh 
 ```
 
 #### Note that this by default only downloads NorESM2-LM data. To download data for all climate models, please uncomment the line with the for loop.
@@ -22,12 +38,33 @@ To setup the environment for causalpaca, we use ```python>=3.10```. There are tw
 To create the environment used for training unet & convlstm models, use [requirements](requirements.txt) and climax related experiments, use [requirements_climax](requirements_climax.txt).
 
 
-Follow the following steps to create the environment:
+Follow the following steps to create the environment for non-windows users:
+
+Not Climax: 
+```python
+python -m venv env_new_emulator
+source env_new_emulator/bin/activate
+pip install -r requirements.txt
+cd emulator # swithc into the emulator folder to perform the emulator setup
+pip install -e .
+```
+
+Climax: 
+```python
+python -m venv env_old_emulator
+source env_old_emulator/bin/activate
+pip install -r requirements_climax.txt
+cd emulator # swithc into the emulator folder to perform the emulator setup
+pip install -e .
+```
+
+For windows users do it in this manner: 
 
 ```python
 python -m venv env_emulator
-source env_emulator/bin/activate
+env_emulator/Scripts/activate
 pip install -r requirements.txt
+cd emulator # switch into the emulator folder to perform the emulator setup
 pip install -e .
 ```
 
@@ -38,6 +75,30 @@ To work with ClimaX, you will need to download the pretrained checkpoints from t
 ```bash
 bash download_climax_checkpoints.sh
 ```
+
+### Pythonpath
+It might be the case that the python variable has to be modified to contain the root folder of the ClimateSet project in order for the emulator to work. Like this:
+
+Non-Windows users: 
+
+```bash
+#input the path to the Climateset folder
+export PYTHONPATH=/home/user/myproject # Or export PYTHONPATH=$pwd if you are in the right directory
+ 
+
+#Check for success with: 
+echo $PYTHONPATH
+```
+
+Windows users: 
+```bash
+#input the path to the Climateset folder
+$env:PYTHONPATH = "home/user/myproject"
+
+#Check for success with: 
+echo $env:PYTHONPATH
+```
+
 
 ## Running a model
 
@@ -50,19 +111,25 @@ Executing the run.py script plain will use the main config.
 
 The [configs folder](emulator/configs/) serves as a blueprint, listing all the modules available. To get a better understanding of our codebases structure please refer to the section on [Structure](#structure) 
 
-
+r
 
 ```python
-python run.py logger=none # will run with configs/main_config.yml
+# starting inside the emulutar folder:
+python emulator/run.py logger=none # will run with configs/main_config.yml
 ```
+>IF you get an error telling you something like "No supported gpu backend found!": [Install cuda and download torch with cuda enabled for the specific cuda version you downloaded (different for linux/windows users)](https://pytorch.org/get-started/locally/) something like: 
+```bash
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
 
 To exectute one of the preset experiments or to run your own experiments you can create and pass on experiment configs:
 
 ```python
-python run.py experiment=test # will run whatever is specified by the configs/experiment/test.yml file
+python emulator/run.py experiment=test # will run whatever is specified by the configs/experiment/test.yml file
 ```
 
-You can make use of the [experiment template](emulator/configs/experiment/templatte.yaml).
+You can make use of the [experiment template](emulator/configs/experiment/template.yaml).
 
 
 ### Reproducing experiments
@@ -72,6 +139,8 @@ We ran 3 different configurations of experiments:
 - *single emulator*: A single ML-model - climate-model pairing.
 - *finetuning emulator*: A single ML-model that was pretrained on one climate-model and fine-tuned on another.
 - *super emulator*: A single ML-model that was trained on multiple climate-models.
+
+#### Single Emulator 
 
 Here are some example to recreate single emulator experimnts for NorESM2-LM.
 
@@ -101,21 +170,24 @@ python emulator/run.py experiment=single_emulator/convlstm/NorESM2-LM_convlstm_t
 
 For climax & climax_frozen models, we will need to use a different requirements file to create another environment.
 
+#### Finetuning
+
 For the single-emulator experiments, we proide configs for each ml model in ```emulator/configs/experiment/single_emulator```  and for fine-tuning experimnts, the configs can be found in ```emulator/configs/experiment/finetuning_emulator```.
 
 For finetuning, we need to fill in ```pretrained_run_id``` and ```pretrained_ckpt_dir``` in the config files for resuming the experiments.
 
 An example command for finetuning would look like this:
 ```python
-python run.py experiment=finetuning_emulator/climax/NorESM2-LM_FGOALS-f3-L_climax_tas+pr_run-01.yaml seed=3423 logger=none
+pythonemulator/run.py experiment=finetuning_emulator/climax/NorESM2-LM_FGOALS-f3-L_climax_tas+pr_run-01.yaml seed=3423 logger=none
 ```
 
-For the superemulation experiments, we provide the configs of our experiments in ```emulator/configs/experiment/superemulator```. Nothe that here, dataloiding is changed slightly to the superemulator infrastructure and a decoder must be set.
+#### Superemulator 
+For the superemulation experiments, we provide the configs of our experiments in ```emulator/configs/experiment/superemulator```. Note that here, dataloding is changed slightly to the superemulator infrastructure and a decoder must be set.
 
 An example command to run a superemulaton experiment would look like this:
-
+Replace modelname.yaml with the respective modelname (for example superemulator_climax_frozen_tas+pr_run-02), see ```emulator/configs/experiment/superemulator```
 ```python
-python run.py experiment=superemulator/superemulator_climax.yaml seed=3423 logger=none
+python emulator/run.py experiment=superemulator/superemulator_climax_tas+pr_run-02.yaml seed=3423 logger=none
 ```
 ### Reloading our trained models
 
@@ -124,9 +196,19 @@ We provide some of our trained models from the experiments, including only super
 
 #### Downloading pretrained checkpoints
 
-For downloading, run the provided shell script which will cretate a folder called ```pretrained_models_small``` where all checkpoints will be stored in.
+All our pretrained models for the paper are hosted on [huggingface](https://huggingface.co/climateset/causalpaca_models). Please refer to the documentation there to download either all pretrained models or only pick checkpoints for a specific experimental setting. After the download, the checkpoints should be storeed in a folder called ```pretrained_models```.
+Be aware that the folder containing pretrained ClimaX checkpoints for the super emulator experiment is quite large (14Gb) and will take quite some time to download.
+
+To download all available checkpoints, you can make use of the provided python script:
+```python
+python download_pretrained_models.py
+```
+If you wish to download only specific climate model data, please refer to the instructions on [hugginface](https://huggingface.co/climateset/causalpaca_models/blob/main/README.md).
+
+For users located inside of Canada, you may also use the provided bash script to download the models. Please be aware that this option works outside of Canada to, but download speeds will be very slow.
+
 ```bash
-bash download_pretrained_models_small.sh
+bash download_pretrained_models.sh
 ```
 
 

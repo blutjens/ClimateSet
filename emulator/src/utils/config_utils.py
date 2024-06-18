@@ -105,8 +105,10 @@ def extras(config: DictConfig) -> None:
             config.trainer.gpus = 0
         if config.datamodule.get("pin_memory"):
             config.datamodule.pin_memory = False
+            print("SET PIN_MEMORY to FALSE")
         if config.datamodule.get("num_workers"):
             config.datamodule.num_workers = 0
+            print("SET NUM_WORKERS to 0")
 
     # force multi-gpu friendly configuration if <config.trainer.accelerator=ddp>
     accelerator = config.trainer.get("accelerator")
@@ -116,8 +118,12 @@ def extras(config: DictConfig) -> None:
         )
         if config.datamodule.get("num_workers"):
             config.datamodule.num_workers = 0
+            print("SET NUM_WORKERS to 0")
         if config.datamodule.get("pin_memory"):
             config.datamodule.pin_memory = False
+            print("SET PIN_MEMORY to FALSE")
+
+
 
     if ("logger" in config.keys()) and config.logger.get("wandb"):
         USE_WANDB = True
@@ -294,7 +300,7 @@ def log_hyperparameters(
 
 
 def save_hydra_config_to_wandb(config: DictConfig):
-    if config.get("save_config_to_wandb"):
+    if config.get("emissions_tracker"):
         log.info(
             f"Hydra config will be saved to WandB as hydra_config.yaml and in wandb run_dir: {wandb.run.dir}"
         )
@@ -302,6 +308,11 @@ def save_hydra_config_to_wandb(config: DictConfig):
         with open(os.path.join(wandb.run.dir, "hydra_config.yaml"), "w") as fp:
             OmegaConf.save(config, f=fp.name, resolve=True)
         wandb.save(os.path.join(wandb.run.dir, "hydra_config.yaml"))
+
+def save_emissions_to_wandb(config: DictConfig, emissions: float):
+    if config.get('datamodule').get('emissions_tracker'):
+        log.info(f"Saving emissions to WandB")
+        wandb.log({"emissions": emissions})
 
 
 def get_config_from_hydra_compose_overrides(overrides: list) -> DictConfig:
