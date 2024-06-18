@@ -95,7 +95,7 @@ class Downloader:
         # csv with supported models and sources
         df_model_source = DATA_CSV
 
-        # check if model is suupported
+        # check if model is supported
         if model is not None:
             if model not in df_model_source["source_id"].tolist():
                 print(f"Model {model} not supported.")
@@ -123,7 +123,15 @@ class Downloader:
                     for e in experiments
                     if e != "historical"
                 ]
-            )  # TODO fix historical
+            )  # TODO fix historical. Also this code assumes that every scenario has the same number of max realizations.
+            if model == 'MPI-ESM1-2-LR': # -> todo: test if this throws an error for scenarios with less ensemble members
+                max_possible_member_number = max(
+                    [
+                        max_ensemble_members_lookup[e]
+                        for e in experiments
+                        if e != "historical"
+                    ]
+                )
         # if taking all ensemble members
         if max_ensemble_members == -1:
             print("Trying to take all ensemble members available.")
@@ -941,7 +949,8 @@ class Downloader:
             if v.endswith("openburning"):
                 institution_id = "IAMC"
             else:
-                institution_id = "PNNL-JGCRI"
+                institution_id = "IAMC"
+                # maybe replace PNNL-JGCRI with IAMC, bc it seems like pnnl doesn't host anymore?
             print(f"Downloading data for variable: {v} \n \n ")
             self.download_raw_input_single_var(v, institution_id=institution_id)
 

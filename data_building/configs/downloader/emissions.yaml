@@ -1,0 +1,10 @@
+models: ["MPI-ESM1-2-LR"]
+downloader_kwargs:
+  vars: ["CO2_em_anthro"] # "CO2", "SO2", "BC", "CH4"] # "tas", "pr"
+  experiments: ["ssp126", "ssp245", "ssp370", "ssp585"] # "ssp119", "historical", 
+  data_dir: "/d3/lutjens/bc3/data/raw"
+  download_biomassburning: False  # get biomassburning data for input4mips
+  quick_skip: True
+  plain_emission_vars: False
+  download_metafiles: False
+  frequency: "mon"

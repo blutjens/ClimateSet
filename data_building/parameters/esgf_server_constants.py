@@ -117,7 +117,7 @@ MODEL_SOURCES = {
         "center": "MPI-M",
     },
     "MPI-ESM1-2-LR": {
-        "node_link": "https://esgf-data.dkrz.de/esg-search/", #"https://esgf-data.dkrz.de/esg-search", # "http://esgf-node.llnl.gov/esg-search/"
+        "node_link": "http://esgf-node.llnl.gov/esg-search/", #"https://esgf-data.dkrz.de/esg-search", # "http://esgf-node.llnl.gov/esg-search/"
         "center": "MPI-M",
     },
     "MRI-ESM2-0": {
