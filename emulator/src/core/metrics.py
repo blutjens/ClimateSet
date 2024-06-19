@@ -151,9 +151,18 @@ def LLweighted_RMSE_Climax(
     Allows to weight the  by the cosine of the latitude to account for gridding differences at equator vs. poles.
     Applied per variable.
     If given a mask, normalized by sum of that.
+    Args:
+        with channels_last = False: 
+            preds   np.ndarray(86,12,2,96)
+            y       np.ndarray(86,12,2,96)
+        with channels_last = True: 
+            preds   np.ndarray(86,12,2,96,144)
+            y       np.ndarray(86,12,2,96,144)
+        deg2rad True
+        mask    None
     """
-
-    # lattitude weights
+    print('shapes in LLweighted_RMSE_Climax (preds,y)', preds.shape, y.shape)
+    # latitude weights
     lat_size = y.shape[-1]
     lats = np.linspace(-90, 90, lat_size)
     if deg2rad:

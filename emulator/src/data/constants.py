@@ -20,6 +20,7 @@ SEQ_LEN_MAPPING = {"mon": 12}
 DATA_DIR = os.path.join(
     Path(__file__).absolute().parent.parent.parent.parent.parent, "scratch/Climateset_DATA"
 )
+DATA_DIR = os.path.join('/d3/lutjens/bc3/data/raw/', 'climateset')
 print(DATA_DIR)
 
 

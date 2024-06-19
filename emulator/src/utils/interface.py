@@ -56,6 +56,7 @@ def get_model(config: DictConfig, **kwargs):
             config.model.get("pretrained_run_id"),
             config.model.get("pretrained_ckpt_dir"),
             allow_resume=False,
+            config=config # ## !!!!! I (BJORN) ADDEDD THIS PARAMETER TODAY DURING DEBUGGING: NEED TO REMOVE AGAIN. 
         )
         log.warn("Loading pretrained Base model")
 
@@ -222,6 +223,7 @@ def reload_model_from_id(
     project="emulator",
     override_kwargs: Sequence[str] = None,
     allow_resume: bool = True,
+    config = None
 ):
     """
     This function reloads a model from a wandb run id
@@ -271,7 +273,14 @@ def reload_model_from_id(
     else:
         best_model_path = restore_model_from_wandb_cloud(run_path)
 
-    config = load_hydra_config_from_wandb(run_path, override_kwargs)
+    try:
+        config = load_hydra_config_from_wandb(run_path, override_kwargs)
+    except:
+        print('Could not load hydra config from wandb. Trying to use config on file.')
+        if config is not None:
+            config = config
+        else:
+            print('No config passed.')
 
     if not (allow_resume):
         config.logger["wandb"]["resume"] = False

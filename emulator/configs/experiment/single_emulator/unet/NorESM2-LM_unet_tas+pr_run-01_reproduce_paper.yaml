@@ -22,16 +22,19 @@ seed: 22201
 #seed: 972
 
 trainer:
-  min_epochs: 1
-  max_epochs: 50
+  min_epochs: 0
+  max_epochs: 0
 #   accelerator: "cpu"
+
+reload_model_from_cfg: True
 
 model:
   loss_function: "climax_lon_lat_rmse"
   monitor: "val/llrmse_climax"
-  finetune: False
-  pretrained_run_id: null 
-  pretrained_ckpt_dir: null 
+  finetune: True
+  pretrained_ckpt_dir: "checkpoints/epoch=49-step=2950.ckpt" # trained on shapes without longitude dim. (..., 96)
+  pretrained_run_id: 64y0zy7t
+#  pretrained_ckpt_dir: "/d3/lutjens/bc3/data/raw/climateset/pretrained_models/single_emulator/Unet/NorESM2-LM_run2_single_emulator_tas+pr_unet/64y0zy7t/checkpoints/epoch=49-step=2950.ckpt"
 
 datamodule: # overwrite what stuff to train on
     # more selection like climate models and scenarios + splits should go here
@@ -43,9 +46,11 @@ datamodule: # overwrite what stuff to train on
    #   seq_length: 120
    seq_to_seq: True # determine the task setting
    batch_size: 4
-   channels_last: True
+   channels_last: False
    eval_batch_size: 4
 
 logger:
   wandb:
           tags: ["single_emulator", "unet", "NorESM2-LM", "tas+pr", "run1"] # set your tags here
+          #resume: False
+          #reinit: False

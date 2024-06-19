@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 from typing import Optional, List, Any, Dict, Tuple, Union
-from codecarbon import EmissionsTracker
+# from codecarbon import EmissionsTracker
 
 from omegaconf import DictConfig
 import omegaconf
@@ -135,6 +135,9 @@ class BaseModel(LightningModule):
             idx = None
 
         preds = self.predict(X, idx)
+
+        # print('train preds shape: ', preds['tas'].shape)
+        
         # dict with keys being the output var ids
         Y = self.output_postprocesser.split_vector_by_variable(
             Y

@@ -5,6 +5,7 @@ import os
 
 # Path of the directory where the data will be downloaded in your local machine
 local_directory = os.path.join(os.getcwd(), 'Climateset_DATA')
+local_directory = os.path.join('/d3/lutjens/bc3/data/raw', 'climateset')
 
 repo_id = "climateset/climateset"
 repo_type = "dataset"

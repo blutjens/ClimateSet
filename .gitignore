@@ -1,4 +1,5 @@
 # All data files
+checkpoints/*
 *.nc
 RAW_DATA
 PROCESSED_DATA

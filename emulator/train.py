@@ -11,7 +11,7 @@ from emulator.src.utils.utils import get_logger
 from pytorch_lightning.profilers import PyTorchProfiler
 from datetime import datetime
 from torch.profiler import profile, record_function, ProfilerActivity, tensorboard_trace_handler, schedule
-from codecarbon import EmissionsTracker
+# from codecarbon import EmissionsTracker
 
 
 
@@ -25,16 +25,37 @@ def run_model(config: DictConfig):
     log.info("Running model")
     if config.get("print_config"):
         cfg_utils.print_config(config, fields="all")
-
-
     
-    emulator_model, data_module = get_model_and_data(config)
+    loaded_model_path = None
+    if 'reload_model_from_cfg' in config:
+        # I (BJORN) ADDED THIs for debugging.
+        if config.reload_model_from_cfg:
+            import torch
+            import hydra
+            from emulator.src.utils.interface import get_datamodule
+            data_module = get_datamodule(config)
+
+            device = config.trainer.accelerator
+            loaded_model_path = config.model.pretrained_ckpt_dir
+            model_state = torch.load(loaded_model_path, map_location=device)
+
+            emulator_model = hydra.utils.instantiate(
+                config.model,
+                _recursive_=False,
+                datamodule_config=config.datamodule,
+            )
+            
+            # Reload weights
+            emulator_model.load_state_dict(model_state["state_dict"])
+            epoch, global_step = model_state["epoch"], model_state["global_step"]
+    else:
+        emulator_model, data_module = get_model_and_data(config)
+
     log.info(f"Got model - {config.name}")
     c = datetime.now()
     # Displays Time
     current_time = c.strftime('%H:%M:%S')
 
-    
     profiler = None
     checkpointing = True
     if config.get("pyprofile"):
@@ -67,26 +88,31 @@ def run_model(config: DictConfig):
         callbacks=callbacks,
     )
 
+    # emissionTracker = EmissionsTracker() if emissions_tracker_enabled else None
+    # if emissionTracker and not config.logger.get("name")=="none":
+    #     emissionTracker.start()
 
-    emissionTracker = EmissionsTracker() if emissions_tracker_enabled else None
-    if emissionTracker and not config.logger.get("name")=="none":
-        emissionTracker.start()
-
+    # Start training
     trainer.fit(model=emulator_model, datamodule=data_module)
-    if emissionTracker and not config.logger.get("name")=="none":
-        print(config.logger.get("wandb"))
-        emissions:float = emissionTracker.stop()
-        log.info(f"Total emissions: {emissions} kgCO2")
-        cfg_utils.save_emissions_to_wandb(config, emissions)
+    
+    # if emissionTracker and not config.logger.get("name")=="none":
+    #     print(config.logger.get("wandb"))
+    #     emissions:float = emissionTracker.stop()
+    #     log.info(f"Total emissions: {emissions} kgCO2")
+    #     cfg_utils.save_emissions_to_wandb(config, emissions)
     
     if(not config.logger.get("name")=="none"):
         cfg_utils.save_hydra_config_to_wandb(config)
 
     # Testing:
-    if(not config.logger.get("name")=="none"):
-        if config.get("test_after_training"):
+    if config.get("test_after_training"):
+        if loaded_model_path is not None:
+            # I (BJORN) ADDED THIS DURING DEBUGGIN.
+            trainer.test(datamodule=data_module, ckpt_path=loaded_model_path)
+        else:
             trainer.test(datamodule=data_module, ckpt_path="best")
 
+    if(not config.logger.get("name")=="none"):
         if config.get("logger"):
             wandb.finish()
     
